@@ -4,11 +4,11 @@
 
 ## 1. Thông tin học viên
 
-- Họ tên:
-- MSSV:
-- Email:
-- Lớp:
-- Link repo bài làm:
+- Họ tên:Nguyễn Văn Thọ
+- MSSV: 2A202603299
+- Email:thonguyen28.nitc@gmail.com
+- Lớp: L2B
+- Link repo bài làm: https://github.com/NguyenVanTho2805/K5-L2B-DAY02-NguyenVanTho-2A202603299-ObjectDetection
 - Link Colab đã chạy:
 
 ## 2. Schema và mini guideline
@@ -17,8 +17,8 @@ Dẫn tới [GUIDELINE_MINI.md](../../GUIDELINE_MINI.md). Tóm tắt ba ca mơ h
 
 ## 3. Annotation và self-QC
 
-- Số file nhãn train:
-- Kết quả checker và lỗi đã xử lý:
+- Số file nhãn train: 39/50 (543 box: car 448, truck 14, bus 56, van 25). 11 ảnh không gán nhãn do tôi quyết định bỏ qua: drive_013, 017, 018, 020, 021, 022, 024, 025, 027, 028, 029.
+- Kết quả checker và lỗi đã xử lý: `python -X utf8 tools/check_yolo_labels.py` báo KHÔNG ĐẠT vì thiếu 11 file nhãn nêu trên; 39 file hiện có không có lỗi định dạng (5 cột, class ID 0–3, tọa độ trong [0,1]). Lỗi môi trường đã xử lý: `python3` không chạy trên Windows nên dùng `python`; console cp1252 gây UnicodeEncodeError nên thêm `-X utf8`.
 - Danh sách ít nhất 10 ảnh đã rà bằng mắt:
 - Lỗi bỏ sót/box/class phát hiện khi rà và cách sửa:
 - Commit khóa nhãn ban đầu:
