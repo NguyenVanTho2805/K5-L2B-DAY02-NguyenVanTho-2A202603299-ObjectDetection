@@ -19,8 +19,27 @@ Dẫn tới [GUIDELINE_MINI.md](../../GUIDELINE_MINI.md). Tóm tắt ba ca mơ h
 - Lỗi export đã phát hiện và sửa: khi gán nhãn trên CVAT tôi đã xoay 399/942 box cho ôm theo hướng xe. Export "Ultralytics YOLO Detection 1.0" của CVAT (file `data.yaml` + `labels/train/`, thử cả theo hướng dẫn của coach) bỏ qua toàn bộ box xoay mà không báo lỗi, nên bản nhãn trước (commit `9c6f634`) chỉ có 39 file / 543 box; 11 ảnh có toàn bộ box xoay (drive_013, 017, 018, 020, 021, 022, 024, 025, 027, 028, 029) không sinh file. Cách sửa: export lại dạng "CVAT for images 1.1" (giữ góc xoay) và chuyển sang YOLO bằng [tools/cvat_xml_to_yolo.py](../../tools/cvat_xml_to_yolo.py). Box không xoay giữ nguyên tọa độ; box xoay được đổi thành box thẳng bao elip nội tiếp của box xoay (cách "bao 4 góc" làm box phình quá rộng với góc 20–45° nên không dùng), cắt theo biên ảnh. Không thêm/xóa/đổi lớp box nào.
 - Kiểm tra lại theo hướng dẫn của coach: tôi import lại vào CVAT bản annotation đã đổi toàn bộ box xoay thành box thẳng (cùng phép đổi như trên), rồi export bằng **Ultralytics YOLO Detection 1.0**. Kết quả đủ **50/50 file, 942 box**, `data.yaml` đúng thứ tự `0 car, 1 truck, 2 bus, 3 van`, và khớp với bộ nhãn đã khóa ở `f191068` (không file nào lệch số box, lớp hoặc tọa độ quá 0,2%). Nhãn trong repo vì vậy giữ nguyên, không đổi sau khi khóa.
 - Kết quả checker và lỗi đã xử lý: `python -X utf8 tools/check_yolo_labels.py` báo `ĐẠT cấu trúc: 50/50 file nhãn hợp lệ`. Đã kiểm thêm: 942/942 dòng đủ 5 cột, class ID 0–3, không box nào vượt biên. Lỗi môi trường đã xử lý: `python3` không chạy trên Windows nên dùng `python`; console cp1252 gây UnicodeEncodeError nên thêm `-X utf8`.
-- Danh sách ít nhất 10 ảnh đã rà bằng mắt:
-- Lỗi bỏ sót/box/class phát hiện khi rà và cách sửa:
+- Danh sách ảnh rà soát và lỗi phát hiện. Danh sách gợi ý ban đầu có sự hỗ trợ của một công cụ AI (xem mục 8); cột "Trạng thái" cho biết mục nào đã sửa hoặc đã kiểm chứng bằng số liệu. [BẠN XÁC NHẬN: tôi đã tự mở xem các ảnh trong danh sách này.]
+
+| Ảnh | Lỗi | Loại | Trạng thái |
+|---|---|---|---|
+| `drive_005` | Xe cứu hộ/cẩu trắng (dòng 12) gán `van`, trong khi cùng loại xe ở `drive_041`, `drive_019`, `drive_038` là `truck` | Nhầm lớp | **Đã sửa**: `van` → `truck` |
+| `drive_006` | Xe cứu hộ (dòng 21) gán `van`, tương tự `drive_005` | Nhầm lớp | **Đã sửa**: `van` → `truck` |
+| `drive_038` | Xe đỏ mui cao, thân hộp, nhiều cửa sổ bên (dòng 8) gán `car`, theo định nghĩa của tôi là `van` | Nhầm lớp | **Đã sửa**: `car` → `van`. Xe buýt hai tầng vàng ở góc phải trên chưa có box: chưa sửa |
+| `drive_026` | Hai box `car` gần như trùng nhau (dòng 11 và 23, cùng tâm, cùng cỡ, IoU 0,759) | Box trùng | Đã kiểm chứng bằng số liệu, chưa sửa |
+| `drive_019` | Cặp box trùng (dòng 25 và 26, IoU 0,74); xe van trắng bên trái (dòng 13) gán `car` | Box trùng, nhầm lớp | Box trùng đã kiểm chứng bằng số liệu; nhầm lớp chưa kiểm chứng; chưa sửa |
+| `drive_009` | Box xe buýt đỏ-trắng lớn cắt mất góc dưới bên phải của xe (do đổi box xoay sang box thẳng bằng phương pháp bao elip) | Box cắt góc | Đã kiểm chứng bằng ảnh, chưa sửa |
+| `drive_041` | Bỏ sót taxi vàng bên trái, xe lớn ở góc phải dưới (bị cắt rìa) và một xe đỏ nhỏ ở giữa trên; box xe buýt nối khớp hơi lỏng | Bỏ sót, box lỏng | Chưa kiểm chứng, chưa sửa |
+| `drive_020` | Bỏ sót xe đen bị cắt ở rìa phải dưới | Bỏ sót | Chưa kiểm chứng, chưa sửa |
+| `drive_027` | Có vẻ bỏ sót sedan xám ở giữa bên phải | Bỏ sót | Chưa kiểm chứng, chưa sửa |
+| `drive_028` | Box ở mép phải (dòng 14) cao hơn xe nhìn thấy; có thể bỏ sót vài xe đỗ nhỏ ở xa | Box lỏng, bỏ sót | Chưa kiểm chứng, chưa sửa |
+| `drive_042` | Box xe buýt phía dưới và box taxi lỏng khoảng 30–60 px | Box lỏng | Chưa kiểm chứng, chưa sửa |
+| `drive_024` | Xe MPV xanh đen cao, thân hộp (dòng 15) gán `car`, có thể là `van` (như `drive_027`) | Nhầm lớp (có thể) | Chưa kiểm chứng, chưa sửa |
+| `drive_013` | Đã xem, không thấy lỗi | | Ổn |
+
+Ba dòng đầu chỉ sửa lớp (3 box), không đổi tọa độ; các lỗi còn lại tôi chưa sửa và ghi rõ ở đây thay vì chỉnh theo gold.
+- Commit khóa nhãn ban đầu giữ ở dòng dưới.
+- Lỗi bỏ sót/box/class phát hiện khi rà và cách sửa: xem bảng trên.
 - Commit khóa nhãn ban đầu: `f191068` (bản 50/50 đầu tiên được đưa lên GitHub). `9c6f634` là bản 39/50 làm trước đó trên máy, chưa từng được push riêng.
 
 ## 4. Gold QC và rework
@@ -101,4 +120,5 @@ Trả lời bốn câu hỏi cuối notebook:
 Ghi công cụ đã dùng, dùng ở bước nào và phần đã tự kiểm tra; không dùng thì ghi rõ. Liệt kê nguồn ngoài repo được sử dụng. Không ghi mật khẩu/token hoặc đính kèm gold train.
 
 - Claude Code (Anthropic): đọc hướng dẫn nộp bài, chẩn đoán lỗi export CVAT bỏ box xoay, viết script `tools/cvat_xml_to_yolo.py` chuyển box xoay từ CVAT XML sang YOLO. Toàn bộ box do tôi tự vẽ trên CVAT; AI không gán nhãn, không thêm/xóa/sửa vị trí box. Phần tôi tự kiểm tra: chạy checker, xem ảnh preview box sau chuyển đổi.
+- Một công cụ AI khác [BẠN ĐIỀN: tên công cụ] gợi ý danh sách ảnh và lỗi ở mục 3. Tôi đã nhờ Claude Code đối chiếu số dòng và các box trùng bằng số liệu; những mục chưa kiểm chứng đã được ghi rõ trong bảng.
 - Claude Code cũng viết script chạy lại các cell train/val/predict của notebook trên máy local (CPU) và điền số liệu mục 5 từ `model_eval_metrics.json`. Phần phân tích bốn câu hỏi cuối notebook do tôi tự viết.
