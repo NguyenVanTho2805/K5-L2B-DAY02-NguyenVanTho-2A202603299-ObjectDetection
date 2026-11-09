@@ -17,8 +17,9 @@ Dẫn tới [GUIDELINE_MINI.md](../../GUIDELINE_MINI.md). Tóm tắt ba ca mơ h
 
 ## 3. Annotation và self-QC
 
-- Số file nhãn train: 39/50 (543 box: car 448, truck 14, bus 56, van 25). 11 ảnh không gán nhãn do tôi quyết định bỏ qua: drive_013, 017, 018, 020, 021, 022, 024, 025, 027, 028, 029.
-- Kết quả checker và lỗi đã xử lý: `python -X utf8 tools/check_yolo_labels.py` báo KHÔNG ĐẠT vì thiếu 11 file nhãn nêu trên; 39 file hiện có không có lỗi định dạng (5 cột, class ID 0–3, tọa độ trong [0,1]). Lỗi môi trường đã xử lý: `python3` không chạy trên Windows nên dùng `python`; console cp1252 gây UnicodeEncodeError nên thêm `-X utf8`.
+- Số file nhãn train: 50/50 (942 box: car 808, truck 15, bus 81, van 38).
+- Lỗi export đã phát hiện và sửa: khi gán nhãn trên CVAT tôi đã xoay 399/942 box cho ôm theo hướng xe. Export "YOLO 1.1" của CVAT bỏ qua toàn bộ box xoay mà không báo lỗi, nên bản nhãn trước (commit `9c6f634`) chỉ có 39 file / 543 box; 11 ảnh có toàn bộ box xoay (drive_013, 017, 018, 020, 021, 022, 024, 025, 027, 028, 029) không sinh file. Cách sửa: export lại dạng "CVAT for images 1.1" (giữ góc xoay) và chuyển sang YOLO bằng [tools/cvat_xml_to_yolo.py](../../tools/cvat_xml_to_yolo.py). Box không xoay giữ nguyên tọa độ; box xoay được đổi thành box thẳng bao elip nội tiếp của box xoay (cách "bao 4 góc" làm box phình quá rộng với góc 20–45° nên không dùng), cắt theo biên ảnh. Không thêm/xóa/đổi lớp box nào.
+- Kết quả checker và lỗi đã xử lý: `python -X utf8 tools/check_yolo_labels.py` báo `ĐẠT cấu trúc: 50/50 file nhãn hợp lệ`. Đã kiểm thêm: 942/942 dòng đủ 5 cột, class ID 0–3, không box nào vượt biên. Lỗi môi trường đã xử lý: `python3` không chạy trên Windows nên dùng `python`; console cp1252 gây UnicodeEncodeError nên thêm `-X utf8`.
 - Danh sách ít nhất 10 ảnh đã rà bằng mắt:
 - Lỗi bỏ sót/box/class phát hiện khi rà và cách sửa:
 - Commit khóa nhãn ban đầu:
@@ -64,7 +65,7 @@ Trả lời bốn câu hỏi cuối notebook:
 
 | Bước/thời điểm | Lỗi quan sát | Cách đã thử | Kết quả/còn thiếu |
 |---|---|---|---|
-| | | | |
+| Export nhãn từ CVAT | Export YOLO 1.1 thiếu 11 file và thiếu 399 box (toàn bộ box bị xoay) | Export lại "CVAT for images 1.1", chuyển box xoay sang box thẳng bằng script, rà lại ảnh preview | Đủ 50/50 file, 942 box, checker ĐẠT |
 
 ## 7. Tự đánh giá theo rubric
 
@@ -73,3 +74,5 @@ Trả lời bốn câu hỏi cuối notebook:
 ## 8. Công cụ AI và tài liệu tham khảo
 
 Ghi công cụ đã dùng, dùng ở bước nào và phần đã tự kiểm tra; không dùng thì ghi rõ. Liệt kê nguồn ngoài repo được sử dụng. Không ghi mật khẩu/token hoặc đính kèm gold train.
+
+- Claude Code (Anthropic): đọc hướng dẫn nộp bài, chẩn đoán lỗi export CVAT bỏ box xoay, viết script `tools/cvat_xml_to_yolo.py` chuyển box xoay từ CVAT XML sang YOLO. Toàn bộ box do tôi tự vẽ trên CVAT; AI không gán nhãn, không thêm/xóa/sửa vị trí box. Phần tôi tự kiểm tra: chạy checker, xem ảnh preview box sau chuyển đổi.
