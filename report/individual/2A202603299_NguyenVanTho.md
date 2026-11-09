@@ -27,14 +27,14 @@ Dẫn tới [GUIDELINE_MINI.md](../../GUIDELINE_MINI.md). Tóm tắt ba ca mơ h
 
 | Chỉ số | Trước sửa | Sau sửa nếu có |
 |---|---:|---:|
-| TP | 439 | |
-| FP | 503 | |
-| FN | 214 | |
-| Precision | 0,4660 | |
-| Recall | 0,6723 | |
-| F1 | 0,5505 | |
-| mean_iou_of_matches | 0,7589 | |
-| passed | false (F1 < 0,80; mean IoU đạt) | |
+| TP | 439 | 439 |
+| FP | 503 | 503 |
+| FN | 214 | 214 |
+| Precision | 0,4660 | 0,4660 |
+| Recall | 0,6723 | 0,6723 |
+| F1 | 0,5505 | 0,5505 |
+| mean_iou_of_matches | 0,7589 | 0,7589 |
+| passed | false (F1 < 0,80; mean IoU đạt) | false (không đổi) |
 
 Kết quả chấm lần 1 (nhãn khóa ở `f191068`) nằm trong `outputs/annotation_evaluation.json`.
 
@@ -44,7 +44,13 @@ Số liệu bổ sung khi phân tích (chạy bằng cùng `tools/evaluate_annot
 - Có 104 box của tôi trùng vị trí (IoU ≥ 0,5) với box gold nhưng khác lớp; 399 box còn lại là box tôi gán mà gold không có (đa số diện tích nhỏ, xe ở xa).
 - Trên Discord lớp, Lab Coach Nguyễn Đức Minh xác nhận gán nhãn lớp trong gold đang khác với quy định lớp, có thể bỏ qua phần check script và làm đủ các bước còn lại của bài lab (ảnh chụp tin nhắn: [BẠN ĐIỀN: đường dẫn ảnh trong assets/ nếu có]).
 
-[BẠN ĐIỀN: quyết định rework hay không rework, ảnh đã kiểm và lý do.]
+Rework đã làm (dựa trên guideline của tôi, không dựa trên gold): khi viết bảng ba ca mơ hồ, tôi thấy ba box không khớp với quyết định của chính mình nên sửa lớp đúng 3 box, không đổi tọa độ:
+- `drive_038`: xe đỏ mui cao, thân hộp, đổi `car` thành `van`.
+- `drive_005` và `drive_006`: xe cứu hộ trắng có cần cẩu, đổi `van` thành `truck` cho cùng loại xe với `drive_038` và `drive_041` (đã gán `truck`).
+
+Sau sửa chấm lại bằng cùng script: các chỉ số không đổi (ba box này không làm thay đổi kết quả ghép với gold). Kết quả trước rework: `outputs/annotation_evaluation_truoc_rework.json`; sau rework: `outputs/annotation_evaluation.json`. Bản nhãn trước rework là commit `f191068`.
+
+[BẠN ĐIỀN: lý do không rework thêm cho F1, ví dụ coach đã xác nhận gold lệch lớp.]
 
 Dẫn tới `outputs/annotation_evaluation.json` trong repo. Nếu rework, ghi ảnh, lỗi đã kiểm, quyết định sửa/giữ và lý do. Không suy nguyên nhân chỉ từ FP/FN. Không có rework thì ghi rõ.
 
