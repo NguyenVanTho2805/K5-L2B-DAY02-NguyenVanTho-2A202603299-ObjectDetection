@@ -61,7 +61,7 @@ Số liệu bổ sung khi phân tích (chạy bằng cùng `tools/evaluate_annot
 - Có xét lớp (chỉ số chính thức): TP 439, FP 503, FN 214, F1 0,5505, mean IoU 0,7589.
 - Không xét lớp: TP 543, FP 399, FN 110, Precision 0,5764, Recall 0,8315, F1 0,6809, mean IoU 0,7615.
 - Có 104 box của tôi trùng vị trí (IoU ≥ 0,5) với box gold nhưng khác lớp; 399 box còn lại là box tôi gán mà gold không có (đa số diện tích nhỏ, xe ở xa).
-- Trên Discord lớp, Lab Coach Nguyễn Đức Minh xác nhận gán nhãn lớp trong gold đang khác với quy định lớp, có thể bỏ qua phần check script và làm đủ các bước còn lại của bài lab (ảnh chụp tin nhắn: [BẠN ĐIỀN: đường dẫn ảnh trong assets/ nếu có]).
+- Trên kênh Discord của lớp (trả lời một học viên khác nêu cùng vấn đề gold gán lớp khác quy định), Lab Coach Nguyễn Đức Minh nói: "cái này do giữa golden trong dán nhãn đang khác rồi", "bạn có thể skip phần check py" và "ko sao đâu, mình cứ làm đủ full step trong bài lab là đc". Tôi hiểu là có thể bỏ qua ngưỡng F1 của bước chấm gold và làm đủ các bước còn lại. Tôi giữ ảnh chụp tin nhắn và sẽ đưa giảng viên khi cần; không đưa vào repo công khai vì ảnh có tên học viên khác.
 
 Rework đã làm (dựa trên guideline của tôi, không dựa trên gold): khi viết bảng ba ca mơ hồ, tôi thấy ba box không khớp với quyết định của chính mình nên sửa lớp đúng 3 box, không đổi tọa độ:
 - `drive_038`: xe đỏ mui cao, thân hộp, đổi `car` thành `van`.
