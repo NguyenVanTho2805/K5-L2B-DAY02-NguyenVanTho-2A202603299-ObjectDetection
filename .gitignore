@@ -14,3 +14,10 @@ __pycache__/
 
 # macOS
 .DS_Store
+
+# Cache của Ultralytics và thư mục editor
+*.cache
+.vscode/
+
+# Bản clone lồng nhau (không thuộc bài nộp)
+K5-L2-Day02-NguyenVanTho-2A202603299-ObjectDetection/
