@@ -22,6 +22,6 @@
 
 | Ảnh | Tình huống | Quyết định cuối | Lý do theo schema |
 | --- | --- | --- | --- |
-| `drive_...` | | | |
-| `drive_...` | | | |
-| `drive_...` | | | |
+| `drive_009` | Xe nhỏ màu trắng bị che một phần giữa xe tải thùng xanh và xe buýt đỏ-trắng, chỉ thấy phần đầu và mui; phân vân giữa `van` và `bus` (minibus). | `van`, vẽ box quanh phần nhìn thấy. | Thân ngắn, mui thấp hơn hẳn các xe buýt xung quanh và chỉ thấy một hàng cửa sổ, nên giống xe van chở người cỡ nhỏ hơn xe buýt. Vì ranh giới minibus/van còn mơ hồ nên ghi lại để hỏi giảng viên. |
+| `drive_038` | Xe màu đỏ, mui cao, thân hộp, có hàng cửa sổ bên hông (góc trên bên phải); phân vân giữa `car` và `van`. | `van`. | Cabin và khoang sau liền một khối, mui cao hơn hẳn xe con xung quanh, nhiều cửa sổ bên. Theo định nghĩa `van` (xe thân hộp liền khối, xe chở người cỡ nhỏ) thì thuộc `van`, không phải `car`. |
+| `drive_005` | Xe cứu hộ/cẩu màu trắng có cần cẩu trên cabin (cùng loại xe xuất hiện ở `drive_006`, `drive_041`, `drive_038`); phân vân giữa `truck` và `van`. | `truck` ở mọi ảnh. | Cabin tách khỏi phần mang thiết bị cẩu ở phía sau, không phải thân hộp liền khối của `van`, nên thuộc `truck` theo định nghĩa (cabin và phần thân hàng riêng). Gán cùng một lớp cho cùng loại xe ở mọi ảnh để nhãn nhất quán. |
