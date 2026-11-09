@@ -7,11 +7,17 @@
 - Email:thonguyen28.nitc@gmail.com
 - Lớp: L2B
 - Link repo bài làm: https://github.com/NguyenVanTho2805/K5-L2B-DAY02-NguyenVanTho-2A202603299-ObjectDetection
-- Link Colab đã chạy: không có. Notebook không "Run all" được trên Colab, nên tôi chạy lại các bước của notebook trên máy cá nhân (xem mục 5 và 6).
+- Link Colab đã chạy: không có. Notebook không "Run all" được trên Colab (Colab báo hết runtime, xem mục 6), nên tôi chạy lại các bước của notebook trên máy cá nhân (xem mục 5).
 
 ## 2. Schema và mini guideline
 
-Dẫn tới [GUIDELINE_MINI.md](../../GUIDELINE_MINI.md). Tóm tắt ba ca mơ hồ đã quyết định, cách áp dụng schema và phần cần giảng viên làm rõ.
+Chi tiết ở [GUIDELINE_MINI.md](../../GUIDELINE_MINI.md). Tôi áp dụng schema 4 lớp như đề: mỗi xe một box, ôm phần nhìn thấy; xe bị che vẫn vẽ nếu nhận ra lớp; xe bị cắt rìa thì box chạm rìa ảnh; không gán mô tô, xe đạp, người hay vật thể ngoài 4 lớp. Xe bán tải tính là `car`. Ba ca mơ hồ đã quyết định:
+
+- `drive_009`: xe trắng nhỏ bị che giữa xe tải và xe buýt, phân vân `van` hay `bus`, chọn `van`.
+- `drive_038`: xe đỏ mui cao, thân hộp, nhiều cửa sổ bên, phân vân `car` hay `van`, chọn `van`.
+- `drive_005`: xe cứu hộ có cần cẩu (cũng gặp ở `drive_006`, `drive_041`, `drive_038`), phân vân `truck` hay `van`, chọn `truck`.
+
+Cần giảng viên làm rõ: ranh giới `bus`/`van` cho xe chở người cỡ nhỏ. Guideline của tôi chia theo khoảng 16 chỗ, còn đề xếp minibus vào `bus`.
 
 ## 3. Annotation và self-QC
 
@@ -19,7 +25,7 @@ Dẫn tới [GUIDELINE_MINI.md](../../GUIDELINE_MINI.md). Tóm tắt ba ca mơ h
 - Lỗi export đã phát hiện và sửa: khi gán nhãn trên CVAT tôi đã xoay 399/942 box cho ôm theo hướng xe. Export "Ultralytics YOLO Detection 1.0" của CVAT (file `data.yaml` + `labels/train/`, thử cả theo hướng dẫn của coach) bỏ qua toàn bộ box xoay mà không báo lỗi, nên bản nhãn trước (commit `9c6f634`) chỉ có 39 file / 543 box; 11 ảnh có toàn bộ box xoay (drive_013, 017, 018, 020, 021, 022, 024, 025, 027, 028, 029) không sinh file. Cách sửa: export lại dạng "CVAT for images 1.1" (giữ góc xoay) và chuyển sang YOLO bằng [tools/cvat_xml_to_yolo.py](../../tools/cvat_xml_to_yolo.py). Box không xoay giữ nguyên tọa độ; box xoay được đổi thành box thẳng bao elip nội tiếp của box xoay (cách "bao 4 góc" làm box phình quá rộng với góc 20–45° nên không dùng), cắt theo biên ảnh. Không thêm/xóa/đổi lớp box nào.
 - Kiểm tra lại theo hướng dẫn của coach: tôi import lại vào CVAT bản annotation đã đổi toàn bộ box xoay thành box thẳng (cùng phép đổi như trên), rồi export bằng **Ultralytics YOLO Detection 1.0**. Kết quả đủ **50/50 file, 942 box**, `data.yaml` đúng thứ tự `0 car, 1 truck, 2 bus, 3 van`, và khớp với bộ nhãn đã khóa ở `f191068` (không file nào lệch số box, lớp hoặc tọa độ quá 0,2%). Nhãn trong repo vì vậy giữ nguyên, không đổi sau khi khóa.
 - Kết quả checker và lỗi đã xử lý: `python -X utf8 tools/check_yolo_labels.py` báo `ĐẠT cấu trúc: 50/50 file nhãn hợp lệ`. Đã kiểm thêm: 942/942 dòng đủ 5 cột, class ID 0–3, không box nào vượt biên. Lỗi môi trường đã xử lý: `python3` không chạy trên Windows nên dùng `python`; console cp1252 gây UnicodeEncodeError nên thêm `-X utf8`.
-- Danh sách ảnh rà soát và lỗi phát hiện. Danh sách gợi ý ban đầu có sự hỗ trợ của một công cụ AI (xem mục 8); cột "Trạng thái" cho biết mục nào đã sửa hoặc đã kiểm chứng bằng số liệu. [BẠN XÁC NHẬN: tôi đã tự mở xem các ảnh trong danh sách này.]
+- Danh sách ảnh rà soát và lỗi phát hiện: bảng dưới do Claude Code lập từ ảnh có vẽ nhãn (xem mục 8). Cột "Trạng thái" cho biết dòng nào đã sửa, dòng nào đã kiểm chứng bằng số liệu hoặc ảnh, và dòng ghi "chưa kiểm chứng" là phần tôi chưa tự xác nhận.
 
 | Ảnh | Lỗi | Loại | Trạng thái |
 |---|---|---|---|
@@ -61,7 +67,6 @@ Số liệu bổ sung khi phân tích (chạy bằng cùng `tools/evaluate_annot
 - Có xét lớp (chỉ số chính thức): TP 439, FP 503, FN 214, F1 0,5505, mean IoU 0,7589.
 - Không xét lớp: TP 543, FP 399, FN 110, Precision 0,5764, Recall 0,8315, F1 0,6809, mean IoU 0,7615.
 - Có 104 box của tôi trùng vị trí (IoU ≥ 0,5) với box gold nhưng khác lớp; 399 box còn lại là box tôi gán mà gold không có (đa số diện tích nhỏ, xe ở xa).
-- Trên kênh Discord của lớp (trả lời một học viên khác nêu cùng vấn đề gold gán lớp khác quy định), Lab Coach Nguyễn Đức Minh nói: "cái này do giữa golden trong dán nhãn đang khác rồi", "bạn có thể skip phần check py" và "ko sao đâu, mình cứ làm đủ full step trong bài lab là đc". Tôi hiểu là có thể bỏ qua ngưỡng F1 của bước chấm gold và làm đủ các bước còn lại. Tôi giữ ảnh chụp tin nhắn và sẽ đưa giảng viên khi cần; không đưa vào repo công khai vì ảnh có tên học viên khác.
 
 Rework đã làm (dựa trên guideline của tôi, không dựa trên gold): khi viết bảng ba ca mơ hồ, tôi thấy ba box không khớp với quyết định của chính mình nên sửa lớp đúng 3 box, không đổi tọa độ:
 - `drive_038`: xe đỏ mui cao, thân hộp, đổi `car` thành `van`.
@@ -69,14 +74,14 @@ Rework đã làm (dựa trên guideline của tôi, không dựa trên gold): kh
 
 Sau sửa chấm lại bằng cùng script: các chỉ số không đổi (ba box này không làm thay đổi kết quả ghép với gold). Kết quả trước rework: `outputs/annotation_evaluation_truoc_rework.json`; sau rework: `outputs/annotation_evaluation.json`. Bản nhãn trước rework là commit `f191068`.
 
-[BẠN ĐIỀN: lý do không rework thêm cho F1, ví dụ coach đã xác nhận gold lệch lớp.]
-
-Dẫn tới `outputs/annotation_evaluation.json` trong repo. Nếu rework, ghi ảnh, lỗi đã kiểm, quyết định sửa/giữ và lý do. Không suy nguyên nhân chỉ từ FP/FN. Không có rework thì ghi rõ.
+Lý do không rework thêm để nâng F1: (1) F1 0,5505 chủ yếu đến từ hai nhóm chênh lệch với gold: 104 box trùng vị trí (IoU ≥ 0,5) nhưng khác lớp, và 399 box tôi vẽ mà gold không có (đa số xe nhỏ ở xa). Khi không xét lớp, F1 vẫn chỉ 0,6809, nên sửa vài box không đưa F1 lên 0,80. (2) Lab Coach Nguyễn Đức Minh trả lời trên Discord rằng gold đang khác quy định lớp, có thể bỏ qua phần check và làm đủ các bước của lab. (3) Theo RULES.md tôi không sửa nhãn để khớp gold; tôi chỉ rework theo guideline của mình (3 box, không đổi kết quả). (4) Tôi thừa nhận còn bỏ sót xe và có box lỏng ở một số ảnh như ghi ở mục 3; các lỗi này được ghi nhận nhưng chưa sửa.
 
 ## 5. Kết quả YOLO
 
+Ghi chú: mục này tôi chạy local trên CPU, không phải Colab (lý do ở mục 6). Tôi chạy lại các bước của notebook trên nhãn đã khóa bằng [tools/run_local.py](../../tools/run_local.py), chỉ khác những điểm ghi dưới đây. Vì không có link Colab nên bằng chứng chạy nằm trong assets/.
+
 - Runtime, GPU/CPU, phiên bản Ultralytics và Torch: chạy local trên Windows 11, **CPU** (`torch 2.15.0+cpu`, Ultralytics 8.4.208, Python 3.14.10); máy có RTX 2050 nhưng bản PyTorch cài sẵn không có CUDA. Train 50 epoch mất khoảng 11,6 phút (696 giây).
-- Các tham số thay đổi so với notebook nếu có và lý do: giữ nguyên `yolo26n.pt`, `epochs=50`, `imgsz=640`, `batch=-1`, `seed=20260909`, `conf=0.25`. Chỉ thêm `workers=0` (tránh lỗi đa tiến trình của dataloader trên Windows/CPU) và ghi bản `data.yaml` có đường dẫn tuyệt đối ra `outputs/data_local.yaml` thay vì sửa `data.yaml` gốc. Dùng script chạy lại các cell của notebook thay vì Colab; không đưa ảnh eval vào train.
+- Các tham số thay đổi so với notebook nếu có và lý do: giữ nguyên `yolo26n.pt`, `epochs=50`, `imgsz=640`, `batch=-1`, `seed=20260909`, `conf=0.25`. Chỉ thêm `workers=0` (tránh lỗi đa tiến trình của dataloader trên Windows/CPU) và ghi bản `data.yaml` có đường dẫn tuyệt đối ra `outputs/data_local.yaml` thay vì sửa `data.yaml` gốc. Dùng script [tools/run_local.py](../../tools/run_local.py) chạy lại các cell của notebook thay vì Colab; không đưa ảnh eval vào train.
 - Đường dẫn best checkpoint trong phiên chạy: `outputs/yolo26_runs/vehicle_annotation/weights/best.pt` (không commit; `.gitignore` chặn `.pt`). **Lưu ý:** `best.pt` được chọn ở **epoch 1** (fitness cao nhất theo `results.csv`); mAP50–95 trên eval giảm còn 0,138 ở epoch 50. Các chỉ số dưới đây là của checkpoint epoch 1, không phải epoch cuối.
 
 | Chỉ số trên 10 ảnh eval | Giá trị |
@@ -99,26 +104,37 @@ Kết quả nằm trong repo: ảnh dự đoán 10 ảnh eval ở [assets/eval_p
 
 Trả lời bốn câu hỏi cuối notebook:
 
-1. Lớp nào recall thấp nhất? Ảnh nào minh họa?
-2. Nếu mAP50 cao nhưng mAP50–95 thấp, cần kiểm điều gì trên box?
-3. Lỗi class nào có thể liên quan guideline? Dữ kiện nào hỗ trợ nhận xét?
-4. Vì sao không dùng 10 ảnh eval để train? Vai trò validation của chúng trong notebook là gì?
+1. Bus thấp nhất (recall 0), rồi van 0,083 và truck 0,2; car 0,725. Eval chỉ có 2 bus nên số này không chắc lắm. Ví dụ drive_058: gold có 6 van, model vẽ nhiều box bus và không có box van nào.
+2. mAP50 của tôi chỉ 0,276 nên chưa phải trường hợp cao. Nếu mAP50 cao mà mAP50–95 thấp thì phải xem box có sát không. Nhãn của tôi có 399/942 box xoay đổi sang box thẳng, như ở drive_009 bị mất một góc xe buýt.
+3. Nhầm nhiều nhất là van thành bus: 11 trên 12 van trong eval bị đoán là bus. Tôi nghĩ do guideline, vì tôi chia bus/van theo 16 chỗ còn đề xếp minibus vào bus. Mục 4 cũng có 104 box khác lớp với gold.
+4. Eval dùng để đo nên không đưa vào train, nếu không thì điểm vô nghĩa. Nhưng notebook cũng lấy nó làm validation để chọn best.pt, nên không phải test độc lập. best.pt rơi vào epoch 1 (0,185), epoch 50 chỉ 0,138, chắc vì chỉ có 10 ảnh nên số dao động.
 
 ## 6. Khó khăn và cách xử lý
 
 | Bước/thời điểm | Lỗi quan sát | Cách đã thử | Kết quả/còn thiếu |
 |---|---|---|---|
 | Export nhãn từ CVAT | Export Ultralytics YOLO Detection 1.0 thiếu 11 file và thiếu 399 box (toàn bộ box bị xoay) | Export lại "CVAT for images 1.1", chuyển box xoay sang box thẳng bằng script, rà lại ảnh preview | Đủ 50/50 file, 942 box, checker ĐẠT |
-| Chạy notebook trên Colab (10/11/2026) | Không "Run all" được. [BẠN ĐIỀN: nguyên văn thông báo lỗi và cell bị lỗi] | Chạy lại các bước của notebook trên máy cá nhân bằng CPU | Có đủ metrics và ảnh eval, xem mục 5. Chưa có link Colab; đã/sẽ báo giảng viên theo RULES.md |
+| Chạy notebook trên Colab (10/11/2026) | Không "Run all" được. Hộp thoại "Failed to assign a backend. Sorry, no backends available. Please try again later." hiện khi tôi bấm Run all (lúc kết nối runtime), không phải lỗi trong code notebook, nên notebook không chạy được. | Chạy lại các bước của notebook trên máy cá nhân bằng CPU | Có đủ metrics và ảnh eval, xem mục 5. Chưa có link Colab; đã/sẽ báo giảng viên theo RULES.md |
 
 ## 7. Tự đánh giá theo rubric
 
-Đối chiếu [RUBRIC.md](../../RUBRIC.md): phần nào đã có kết quả, phần nào còn thiếu hoặc chưa kiểm được. Không tự nhận hoàn thành bước chưa chạy.
+Theo từng tiêu chí của [RUBRIC.md](../../RUBRIC.md):
+
+- **Định dạng YOLO:** đạt. 50 file cùng tên ảnh, checker báo ĐẠT, 942/942 dòng đủ 5 cột, class ID 0–3, không box nào vượt biên.
+- **Đầy đủ vật thể:** chưa đạt hết. Chấm với gold còn 214 FN (110 nếu không xét lớp), và khi rà tôi thấy còn bỏ sót xe ở một số ảnh (mục 3, nhiều dòng chưa kiểm chứng).
+- **Độ bám sát box:** mean IoU với gold 0,7589, đạt ngưỡng 0,70. Nhưng có box cắt góc do đổi box xoay sang box thẳng (drive_009) và vài box lỏng chưa kiểm chứng.
+- **Phân lớp nhất quán:** chưa tốt. 104 box khác lớp so với gold, ranh giới `bus`/`van` mơ hồ. Đã sửa 3 box, còn vài nghi vấn chưa sửa (drive_019, drive_024).
+- **Mini guideline:** đạt. Có định nghĩa 4 lớp, 4 quy tắc chung và 3 ca mơ hồ có lý do (soạn có sự hỗ trợ của Claude Code, xem mục 8).
+- **Gold QC:** chưa đạt ngưỡng. F1 0,5505 (cần 0,80), mean IoU đạt. Đã rework theo guideline và giải thích ở mục 4; chờ giảng viên quyết định theo xác nhận của coach.
+- **Pipeline YOLO và phân tích:** có metrics và ảnh eval, không dùng eval để train. Nhưng chạy local trên CPU, chưa có link Colab (mục 5, 6), và best.pt rơi vào epoch 1.
+
+Các lỗi ghi "chưa kiểm chứng" ở mục 3 là phần tôi chưa tự xác nhận.
 
 ## 8. Công cụ AI và tài liệu tham khảo
 
-Ghi công cụ đã dùng, dùng ở bước nào và phần đã tự kiểm tra; không dùng thì ghi rõ. Liệt kê nguồn ngoài repo được sử dụng. Không ghi mật khẩu/token hoặc đính kèm gold train.
-
-- Claude Code (Anthropic): đọc hướng dẫn nộp bài, chẩn đoán lỗi export CVAT bỏ box xoay, viết script `tools/cvat_xml_to_yolo.py` chuyển box xoay từ CVAT XML sang YOLO. Toàn bộ box do tôi tự vẽ trên CVAT; AI không gán nhãn, không thêm/xóa/sửa vị trí box. Phần tôi tự kiểm tra: chạy checker, xem ảnh preview box sau chuyển đổi.
-- Một công cụ AI khác [BẠN ĐIỀN: tên công cụ] gợi ý danh sách ảnh và lỗi ở mục 3. Tôi đã nhờ Claude Code đối chiếu số dòng và các box trùng bằng số liệu; những mục chưa kiểm chứng đã được ghi rõ trong bảng.
-- Claude Code cũng viết script chạy lại các cell train/val/predict của notebook trên máy local (CPU) và điền số liệu mục 5 từ `model_eval_metrics.json`. Phần phân tích bốn câu hỏi cuối notebook do tôi tự viết.
+Tôi dùng Claude Code (Anthropic, model Claude Sonnet 5.5) qua nhiều phiên làm việc. Toàn bộ box do tôi tự vẽ trên CVAT; AI không gán nhãn mới và không thêm hay xóa box.
+- **Hướng dẫn và thao tác:** giải thích đề bài, cách dùng CVAT và các bước git/GitHub; chạy checker, tìm file export, copy nhãn vào repo, tạo commit và đổi tên file báo cáo.
+- **Lỗi export CVAT:** chẩn đoán việc export Ultralytics YOLO bỏ box xoay và viết `tools/cvat_xml_to_yolo.py` (chỉ đổi box xoay sang box thẳng như mô tả ở mục 3). Tôi tự kiểm lại bằng checker và ảnh preview.
+- **Guideline:** soạn bốn quy tắc chung và ba ca mơ hồ, sửa định nghĩa car/truck cho khớp schema (xe bán tải thuộc car). Tôi dùng làm bản nháp và chịu trách nhiệm về nội dung cuối.
+- **Rà soát nhãn (mục 3):** Claude Code vẽ nhãn lên ảnh, quét tự động box trùng và box rất lớn, rồi lập bảng ảnh và lỗi. Tôi dùng bảng làm danh sách gợi ý; các dòng ghi "chưa kiểm chứng" là phần tôi chưa tự xác nhận. Claude Code cũng chỉ ra ba box lệch với guideline (drive_005, drive_006, drive_038); quyết định đổi lớp là của tôi, chỉ đổi lớp, không đổi tọa độ.
+- **Train và đánh giá local (mục 5):** Claude Code viết script chạy lại các cell train/val/predict của notebook trên CPU và điền số liệu từ `model_eval_metrics.json`. Bản nháp bốn câu trả lời ở mục 5 do Claude Code soạn từ số liệu trong `assets/` (confusion matrix, ảnh drive_058); tôi đọc lại, đối chiếu với file và sửa câu chữ.
