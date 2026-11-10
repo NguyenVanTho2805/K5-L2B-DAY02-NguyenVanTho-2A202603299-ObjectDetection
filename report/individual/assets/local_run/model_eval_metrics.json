@@ -1,0 +1,35 @@
+{
+  "precision": 0.42695202329133386,
+  "recall": 0.25219002137922675,
+  "map50": 0.27617694610796406,
+  "map50_95": 0.18485649212214902,
+  "eval_images": 10,
+  "checkpoint": "D:\\VIN AI L2\\K5-L2-Day02-NguyenVanTho-2A202603299-ObjectDetection\\outputs\\yolo26_runs\\vehicle_annotation\\weights\\best.pt",
+  "per_class": {
+    "car": {
+      "precision": 0.6544729056217229,
+      "recall": 0.7254267521835738,
+      "map50": 0.739032747557129,
+      "map50_95": 0.4884333494185002
+    },
+    "truck": {
+      "precision": 0.872649680123594,
+      "recall": 0.2,
+      "map50": 0.29266081871345023,
+      "map50_95": 0.20596345029239763
+    },
+    "bus": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "map50": 0.009705882352941175,
+      "map50_95": 0.004852941176470588
+    },
+    "van": {
+      "precision": 0.18068550742001832,
+      "recall": 0.08333333333333333,
+      "map50": 0.06330833580833581,
+      "map50_95": 0.0401762276012276
+    }
+  },
+  "runtime": "local cpu | torch 2.15.0+cpu | ultralytics 8.4.208"
+}

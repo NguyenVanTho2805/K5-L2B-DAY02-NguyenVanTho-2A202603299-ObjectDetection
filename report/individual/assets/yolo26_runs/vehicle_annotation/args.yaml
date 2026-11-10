@@ -1,7 +1,7 @@
 task: detect
 mode: train
 model: yolo26n.pt
-data: D:\VIN AI L2\K5-L2-Day02-NguyenVanTho-2A202603299-ObjectDetection\outputs\data_local.yaml
+data: /content/Day2-Lab/data.yaml
 epochs: 50
 time: null
 patience: 100
@@ -10,9 +10,9 @@ imgsz: 640
 save: true
 save_period: -1
 cache: false
-device: cpu
-workers: 0
-project: D:\VIN AI L2\K5-L2-Day02-NguyenVanTho-2A202603299-ObjectDetection\outputs\yolo26_runs
+device: "0"
+workers: 8
+project: /content/Day2-Lab/outputs/yolo26_runs
 name: vehicle_annotation
 exist_ok: true
 pretrained: true
@@ -112,4 +112,4 @@ auto_augment: randaugment
 erasing: 0.4
 cfg: null
 tracker: tracktrack.yaml
-save_dir: D:\VIN AI L2\K5-L2-Day02-NguyenVanTho-2A202603299-ObjectDetection\outputs\yolo26_runs\vehicle_annotation
+save_dir: /content/Day2-Lab/outputs/yolo26_runs/vehicle_annotation

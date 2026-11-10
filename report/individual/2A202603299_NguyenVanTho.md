@@ -7,7 +7,7 @@
 - Email:thonguyen28.nitc@gmail.com
 - Lớp: L2B
 - Link repo bài làm: https://github.com/NguyenVanTho2805/K5-L2B-DAY02-NguyenVanTho-2A202603299-ObjectDetection
-- Link Colab đã chạy: không có. Notebook không "Run all" được trên Colab (Colab báo hết runtime, xem mục 6), nên tôi chạy lại các bước của notebook trên máy cá nhân (xem mục 5).
+- Link Colab đã chạy: https://colab.research.google.com/drive/11lR9_1KmJvSMlEBP7YWt1fDJdSC-b8Ak?usp=sharing (chạy thành công sau khi lần đầu Colab báo hết runtime, xem mục 6).
 
 ## 2. Schema và mini guideline
 
@@ -78,20 +78,20 @@ Lý do không rework thêm để nâng F1: (1) F1 0,5505 chủ yếu đến từ
 
 ## 5. Kết quả YOLO
 
-Ghi chú: mục này tôi chạy local trên CPU, không phải Colab (lý do ở mục 6). Tôi chạy lại các bước của notebook trên nhãn đã khóa bằng [tools/run_local.py](../../tools/run_local.py), chỉ khác những điểm ghi dưới đây. Vì không có link Colab nên bằng chứng chạy nằm trong assets/.
+Ghi chú: kết quả chính trong mục này là lần chạy trên [Colab](https://colab.research.google.com/drive/11lR9_1KmJvSMlEBP7YWt1fDJdSC-b8Ak?usp=sharing) bằng notebook gốc, chỉ đổi `REPO_URL` thành repo của tôi. Khi Colab hết runtime tôi đã chạy local trên CPU bằng [tools/run_local.py](../../tools/run_local.py) làm phương án dự phòng; kết quả local (gần giống) để ở `assets/local_run/`.
 
-- Runtime, GPU/CPU, phiên bản Ultralytics và Torch: chạy local trên Windows 11, **CPU** (`torch 2.15.0+cpu`, Ultralytics 8.4.208, Python 3.14.10); máy có RTX 2050 nhưng bản PyTorch cài sẵn không có CUDA. Train 50 epoch mất khoảng 11,6 phút (696 giây).
-- Các tham số thay đổi so với notebook nếu có và lý do: giữ nguyên `yolo26n.pt`, `epochs=50`, `imgsz=640`, `batch=-1`, `seed=20260909`, `conf=0.25`. Chỉ thêm `workers=0` (tránh lỗi đa tiến trình của dataloader trên Windows/CPU) và ghi bản `data.yaml` có đường dẫn tuyệt đối ra `outputs/data_local.yaml` thay vì sửa `data.yaml` gốc. Dùng script [tools/run_local.py](../../tools/run_local.py) chạy lại các cell của notebook thay vì Colab; không đưa ảnh eval vào train.
-- Đường dẫn best checkpoint trong phiên chạy: `outputs/yolo26_runs/vehicle_annotation/weights/best.pt` (không commit; `.gitignore` chặn `.pt`). **Lưu ý:** `best.pt` được chọn ở **epoch 1** (fitness cao nhất theo `results.csv`); mAP50–95 trên eval giảm còn 0,138 ở epoch 50. Các chỉ số dưới đây là của checkpoint epoch 1, không phải epoch cuối.
+- Runtime, GPU/CPU, phiên bản Ultralytics và Torch: Colab, GPU (`device=0` trong `args.yaml`). Ultralytics là bản mới nhất cài bằng pip ở cell đầu của notebook; số phiên bản Ultralytics và Torch xem trong log của notebook ở link Colab.
+- Các tham số thay đổi so với notebook nếu có và lý do: không đổi tham số nào (`yolo26n.pt`, `epochs=50`, `imgsz=640`, `batch=-1`, `seed=20260909`), chỉ thay `REPO_URL`. Không đưa ảnh eval vào train. Riêng bản local có thêm `workers=0` và `outputs/data_local.yaml` vì chạy trên Windows/CPU.
+- Đường dẫn best checkpoint trong phiên chạy: `/content/Day2-Lab/outputs/yolo26_runs/vehicle_annotation/weights/best.pt` (trong phiên Colab; không commit vì `.gitignore` chặn `.pt`). **Lưu ý:** `best.pt` được chọn ở **epoch 1** (fitness cao nhất theo `results.csv`); mAP50–95 trên eval giảm còn 0,137 ở epoch 50. Các chỉ số dưới đây là của checkpoint epoch 1, không phải epoch cuối.
 
 | Chỉ số trên 10 ảnh eval | Giá trị |
 |---|---:|
-| Precision | 0,427 |
-| Recall | 0,252 |
-| mAP50 | 0,276 |
-| mAP50–95 | 0,185 |
+| Precision | 0,411 |
+| Recall | 0,230 |
+| mAP50 | 0,272 |
+| mAP50–95 | 0,202 |
 
-Theo từng lớp (10 ảnh eval, 113 box; từ [model_eval_metrics.json](assets/model_eval_metrics.json)):
+Theo từng lớp (bản chạy local; file kết quả Colab không có số liệu theo lớp. 10 ảnh eval, 113 box; từ [local_run/model_eval_metrics.json](assets/local_run/model_eval_metrics.json)):
 
 | Lớp | Số box eval | Precision | Recall | mAP50 | mAP50–95 |
 |---|---:|---:|---:|---:|---:|
@@ -100,21 +100,23 @@ Theo từng lớp (10 ảnh eval, 113 box; từ [model_eval_metrics.json](assets
 | bus | 2 | 0,000 | 0,000 | 0,010 | 0,005 |
 | van | 12 | 0,181 | 0,083 | 0,063 | 0,040 |
 
-Kết quả nằm trong repo: ảnh dự đoán 10 ảnh eval ở [assets/eval_predictions/visuals/](assets/eval_predictions/visuals/), log train theo epoch ở [assets/yolo26_runs/vehicle_annotation/results.csv](assets/yolo26_runs/vehicle_annotation/results.csv), ảnh chỉ số (confusion matrix, PR curve) ở [assets/yolo26_runs/vehicle_eval/](assets/yolo26_runs/vehicle_eval/). Ảnh cụ thể để dẫn trong phần phân tích: [drive_058.jpg](assets/eval_predictions/visuals/drive_058.jpg) (có 1 bus và 6 van trong nhãn eval).
+Với Colab, confusion matrix cho thấy số box đúng lớp: car 84/94, truck 1/5, bus 0/2, van 0/12 (11 van bị đoán là bus).
+
+Kết quả Colab nằm trong repo: ảnh dự đoán 10 ảnh eval ở [assets/eval_predictions/visuals/](assets/eval_predictions/visuals/), log train theo epoch ở [assets/yolo26_runs/vehicle_annotation/results.csv](assets/yolo26_runs/vehicle_annotation/results.csv), ảnh chỉ số (confusion matrix, PR curve) ở [assets/yolo26_runs/vehicle_eval/](assets/yolo26_runs/vehicle_eval/). Ảnh cụ thể để dẫn trong phần phân tích: [drive_058.jpg](assets/eval_predictions/visuals/drive_058.jpg) (có 1 bus và 6 van trong nhãn eval). Kết quả của bản chạy local ở [assets/local_run/](assets/local_run/).
 
 Trả lời bốn câu hỏi cuối notebook:
 
-1. Bus thấp nhất (recall 0), rồi van 0,083 và truck 0,2; car 0,725. Eval chỉ có 2 bus nên số này không chắc lắm. Ví dụ drive_058: gold có 6 van, model vẽ nhiều box bus và không có box van nào.
-2. mAP50 của tôi chỉ 0,276 nên chưa phải trường hợp cao. Nếu mAP50 cao mà mAP50–95 thấp thì phải xem box có sát không. Nhãn của tôi có 399/942 box xoay đổi sang box thẳng, như ở drive_009 bị mất một góc xe buýt.
-3. Nhầm nhiều nhất là van thành bus: 11 trên 12 van trong eval bị đoán là bus. Tôi nghĩ do guideline, vì tôi chia bus/van theo 16 chỗ còn đề xếp minibus vào bus. Mục 4 cũng có 104 box khác lớp với gold.
-4. Eval dùng để đo nên không đưa vào train, nếu không thì điểm vô nghĩa. Nhưng notebook cũng lấy nó làm validation để chọn best.pt, nên không phải test độc lập. best.pt rơi vào epoch 1 (0,185), epoch 50 chỉ 0,138, chắc vì chỉ có 10 ảnh nên số dao động.
+1. Bus và van thấp nhất: theo confusion matrix của Colab, bus đúng 0/2 và van đúng 0/12; truck 1/5, car 84/94. Eval chỉ có 2 bus nên số này không chắc lắm. Ví dụ drive_058: gold có 6 van và 1 bus, model vẽ 3 box bus và không có box van nào.
+2. mAP50 của tôi chỉ 0,272 nên chưa phải trường hợp cao. Nếu mAP50 cao mà mAP50–95 thấp thì phải xem box có sát không. Nhãn của tôi có 399/942 box xoay đổi sang box thẳng, như ở drive_009 bị mất một góc xe buýt.
+3. Nhầm nhiều nhất là van thành bus: 11 trên 12 van trong eval bị đoán là bus (confusion matrix của Colab). Tôi nghĩ do guideline, vì tôi chia bus/van theo 16 chỗ còn đề xếp minibus vào bus. Mục 4 cũng có 104 box khác lớp với gold.
+4. Eval dùng để đo nên không đưa vào train, nếu không thì điểm vô nghĩa. Nhưng notebook cũng lấy nó làm validation để chọn best.pt, nên không phải test độc lập. best.pt rơi vào epoch 1 (0,202), epoch 50 chỉ 0,137, chắc vì chỉ có 10 ảnh nên số dao động.
 
 ## 6. Khó khăn và cách xử lý
 
 | Bước/thời điểm | Lỗi quan sát | Cách đã thử | Kết quả/còn thiếu |
 |---|---|---|---|
 | Export nhãn từ CVAT | Export Ultralytics YOLO Detection 1.0 thiếu 11 file và thiếu 399 box (toàn bộ box bị xoay) | Export lại "CVAT for images 1.1", chuyển box xoay sang box thẳng bằng script, rà lại ảnh preview | Đủ 50/50 file, 942 box, checker ĐẠT |
-| Chạy notebook trên Colab (10/11/2026) | Không "Run all" được. Hộp thoại "Failed to assign a backend. Sorry, no backends available. Please try again later." hiện khi tôi bấm Run all (lúc kết nối runtime), không phải lỗi trong code notebook, nên notebook không chạy được. | Chạy lại các bước của notebook trên máy cá nhân bằng CPU | Có đủ metrics và ảnh eval, xem mục 5. Chưa có link Colab; đã/sẽ báo giảng viên theo RULES.md |
+| Chạy notebook trên Colab (10/11/2026) | Lần đầu không "Run all" được. Hộp thoại "Failed to assign a backend. Sorry, no backends available. Please try again later." hiện khi tôi bấm Run all (lúc kết nối runtime), không phải lỗi trong code notebook. | Chạy local trên CPU bằng tools/run_local.py làm dự phòng, rồi thử lại Colab sau đó | Colab chạy được sau đó (link ở mục 1, kết quả ở mục 5) |
 
 ## 7. Tự đánh giá theo rubric
 
@@ -126,7 +128,7 @@ Theo từng tiêu chí của [RUBRIC.md](../../RUBRIC.md):
 - **Phân lớp nhất quán:** chưa tốt. 104 box khác lớp so với gold, ranh giới `bus`/`van` mơ hồ. Đã sửa 3 box, còn vài nghi vấn chưa sửa (drive_019, drive_024).
 - **Mini guideline:** đạt. Có định nghĩa 4 lớp, 4 quy tắc chung và 3 ca mơ hồ có lý do (soạn có sự hỗ trợ của Claude Code, xem mục 8).
 - **Gold QC:** chưa đạt ngưỡng. F1 0,5505 (cần 0,80), mean IoU đạt. Đã rework theo guideline và giải thích ở mục 4; chờ giảng viên quyết định theo xác nhận của coach.
-- **Pipeline YOLO và phân tích:** có metrics và ảnh eval, không dùng eval để train. Nhưng chạy local trên CPU, chưa có link Colab (mục 5, 6), và best.pt rơi vào epoch 1.
+- **Pipeline YOLO và phân tích:** Colab chạy được (link ở mục 1), có metrics, ảnh eval và 4 câu trả lời, không dùng eval để train. Kết quả thấp (mAP50 0,272) và best.pt rơi vào epoch 1.
 
 Các lỗi ghi "chưa kiểm chứng" ở mục 3 là phần tôi chưa tự xác nhận.
 
@@ -137,4 +139,4 @@ Tôi dùng Claude Code (Anthropic, model Claude Sonnet 5.5) qua nhiều phiên l
 - **Lỗi export CVAT:** chẩn đoán việc export Ultralytics YOLO bỏ box xoay và viết `tools/cvat_xml_to_yolo.py` (chỉ đổi box xoay sang box thẳng như mô tả ở mục 3). Tôi tự kiểm lại bằng checker và ảnh preview.
 - **Guideline:** soạn bốn quy tắc chung và ba ca mơ hồ, sửa định nghĩa car/truck cho khớp schema (xe bán tải thuộc car). Tôi dùng làm bản nháp và chịu trách nhiệm về nội dung cuối.
 - **Rà soát nhãn (mục 3):** Claude Code vẽ nhãn lên ảnh, quét tự động box trùng và box rất lớn, rồi lập bảng ảnh và lỗi. Tôi dùng bảng làm danh sách gợi ý; các dòng ghi "chưa kiểm chứng" là phần tôi chưa tự xác nhận. Claude Code cũng chỉ ra ba box lệch với guideline (drive_005, drive_006, drive_038); quyết định đổi lớp là của tôi, chỉ đổi lớp, không đổi tọa độ.
-- **Train và đánh giá local (mục 5):** Claude Code viết script chạy lại các cell train/val/predict của notebook trên CPU và điền số liệu từ `model_eval_metrics.json`. Bản nháp bốn câu trả lời ở mục 5 do Claude Code soạn từ số liệu trong `assets/` (confusion matrix, ảnh drive_058); tôi đọc lại, đối chiếu với file và sửa câu chữ.
+- **Train và đánh giá (mục 5):** Claude Code viết script `tools/run_local.py` chạy lại các cell train/val/predict của notebook trên CPU làm phương án dự phòng khi Colab hết runtime, và điền số liệu của bản local. Kết quả chính là lần chạy Colab của tôi bằng notebook gốc. Bản nháp bốn câu trả lời ở mục 5 do Claude Code soạn từ số liệu trong `assets/` (confusion matrix, ảnh drive_058); tôi đọc lại, đối chiếu với file và sửa câu chữ.
